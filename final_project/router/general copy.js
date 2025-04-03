@@ -5,42 +5,69 @@ let users = require("./auth_users").users;
 const public_users = express.Router();
 
 
-// Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  res.send(JSON.stringify(books,null,4));
+const axios = require('axios');
+
+public_users.get('/', (req, res) => {
+    new Promise((resolve, reject) => {
+        if (books) {
+            resolve(books);
+        } else {
+            reject({ message: "Books not found" });
+        }
+    })
+    .then((books) => res.json(books))
+    .catch((err) => res.status(500).json(err));
 });
 
 
 
-// Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+
+public_users.get('/isbn/:isbn', (req, res) => {
     const isbn = req.params.isbn;
-    res.send(books[isbn]);
+
+    new Promise((resolve, reject) => {
+        if (books[isbn]) {
+            resolve(books[isbn]);
+        } else {
+            reject({ message: "Book not found" });
+        }
+    })
+    .then((book) => res.json(book))
+    .catch((err) => res.status(404).json(err));
 });
+
 
   
-// Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  const author = req.params.author;
-  const booksByAuthor = Object.values(books).filter(book => book.author === author);
+public_users.get('/author/:author', (req, res) => {
+    const author = req.params.author;
 
-    if (booksByAuthor.length > 0) {
-        res.json(booksByAuthor);
-    } else {
-        res.status(404).json({ message: "No books found for this author" });
-    }
+    new Promise((resolve, reject) => {
+        const booksByAuthor = Object.values(books).filter(book => book.author === author);
+        
+        if (booksByAuthor.length > 0) {
+            resolve(booksByAuthor);
+        } else {
+            reject({ message: "No books found for this author" });
+        }
+    })
+    .then((books) => res.json(books))
+    .catch((err) => res.status(404).json(err));
 });
 
-// Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  const title = req.params.title;
-  const booksBytitle = Object.values(books).filter(book => book.title === title);
+public_users.get('/title/:title', (req, res) => {
+    const title = req.params.title;
 
-    if (booksBytitle.length > 0) {
-        res.json(booksBytitle);
-    } else {
-        res.status(404).json({ message: "No books found for this title" });
-    }
+    new Promise((resolve, reject) => {
+        const booksByTitle = Object.values(books).filter(book => book.title === title);
+        
+        if (booksByTitle.length > 0) {
+            resolve(booksByTitle);
+        } else {
+            reject({ message: "No books found for this title" });
+        }
+    })
+    .then((books) => res.json(books))
+    .catch((err) => res.status(404).json(err));
 });
 
 //  Get book review
